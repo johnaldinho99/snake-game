@@ -1,0 +1,142 @@
+<!doctype html>
+<html lang="sv">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Snake</title>
+  <meta name="description" content="Modernt Snake-spel med poäng, topplista och spöken." />
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='24' fill='%230b1220'/><path d='M25 70 Q25 30 50 30 T75 50' stroke='%234ade80' stroke-width='14' fill='none' stroke-linecap='round'/><circle cx='75' cy='50' r='9' fill='%234ade80'/></svg>" />
+  <link rel="stylesheet" href="css/style.css" />
+</head>
+<body data-mode="menu">
+  <div class="app">
+    <header class="topbar">
+      <div class="brand">
+        <span class="brand-dot" aria-hidden="true"></span>
+        <span>Snake</span>
+      </div>
+      <dl class="hud" aria-live="polite">
+        <div><dt>Poäng</dt><dd id="hud-score">0</dd></div>
+        <div><dt>Längd</dt><dd id="hud-length">3</dd></div>
+        <div><dt>Bästa</dt><dd id="hud-best">0</dd></div>
+        <div><dt>Nivå</dt><dd id="hud-level">Medel ×2</dd></div>
+      </dl>
+      <button id="btn-pause" class="icon-btn" type="button" aria-label="Pausa">❚❚</button>
+    </header>
+
+    <main class="stage">
+      <div id="board-wrap" class="board-wrap">
+        <canvas id="board" aria-label="Spelplan"></canvas>
+
+        <!-- Main menu -->
+        <section id="screen-menu" class="overlay">
+          <div class="card">
+            <h1 class="title">Snake</h1>
+            <p class="subtitle">Ät äpplen, jaga stjärnor och undvik spökena.</p>
+
+            <button id="btn-start" class="btn btn-primary btn-lg" type="button" data-autofocus>Starta spel</button>
+
+            <div class="field">
+              <span class="field-label" id="diff-label">Svårighetsgrad</span>
+              <div class="segmented" role="group" aria-labelledby="diff-label">
+                <button type="button" data-difficulty="easy">Lätt <small>×1</small></button>
+                <button type="button" data-difficulty="medium">Medel <small>×2</small></button>
+                <button type="button" data-difficulty="hard">Svår <small>×3</small></button>
+              </div>
+            </div>
+
+            <div class="row">
+              <button id="btn-scores" class="btn" type="button">🏆 Topplista</button>
+              <button id="btn-help" class="btn" type="button">Hur man spelar</button>
+            </div>
+            <button id="btn-sound" class="btn btn-ghost" type="button" aria-pressed="true">Ljud: På</button>
+          </div>
+        </section>
+
+        <!-- Help -->
+        <section id="screen-help" class="overlay" hidden>
+          <div class="card card-wide">
+            <h2>Hur man spelar</h2>
+            <ul class="legend">
+              <li><span class="chip chip-apple"></span><div><strong>Äpple</strong> – 10 p × nivå. Ormen växer och blir snabbare.</div></li>
+              <li><span class="chip chip-bonus">★</span><div><strong>Bonusstjärna</strong> – 50 p × nivå. Syns bara några sekunder!</div></li>
+              <li><span class="chip chip-ghost chip-ghost-warn"></span><div><strong>Spöke (varning)</strong> – blinkar svagt. Ofarligt, men flytta dig.</div></li>
+              <li><span class="chip chip-ghost"></span><div><strong>Spöke (aktivt)</strong> – lyser starkt. Krockar du dör du. Överlev det för 5 p × nivå.</div></li>
+            </ul>
+            <h3>Kontroller</h3>
+            <table class="keys">
+              <tr><td><kbd>↑</kbd><kbd>↓</kbd><kbd>←</kbd><kbd>→</kbd> eller <kbd>W</kbd><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd></td><td>Styr</td></tr>
+              <tr><td><kbd>P</kbd> / <kbd>Esc</kbd></td><td>Paus</td></tr>
+              <tr><td><kbd>Enter</kbd></td><td>Starta / fortsätt</td></tr>
+              <tr><td>Swipe</td><td>Styr på mobil</td></tr>
+            </table>
+            <p class="muted">Du dör om du kör in i väggen, i dig själv eller i ett aktivt spöke.</p>
+            <button id="btn-help-back" class="btn btn-primary" type="button" data-autofocus>Tillbaka</button>
+          </div>
+        </section>
+
+        <!-- Highscores -->
+        <section id="screen-highscores" class="overlay" hidden>
+          <div class="card card-wide">
+            <h2>🏆 Topplista</h2>
+            <p id="hs-empty" class="muted">Inga resultat än – bli först!</p>
+            <table id="hs-table" class="scores">
+              <thead><tr><th>#</th><th>Namn</th><th>Poäng</th><th>Nivå</th><th>Datum</th></tr></thead>
+              <tbody id="hs-body"></tbody>
+            </table>
+            <div class="row">
+              <button id="btn-scores-back" class="btn btn-primary" type="button" data-autofocus>Tillbaka</button>
+              <button id="btn-clear-scores" class="btn btn-ghost" type="button">Rensa</button>
+            </div>
+          </div>
+        </section>
+
+        <!-- Countdown -->
+        <section id="screen-countdown" class="overlay overlay-clear" hidden>
+          <div id="countdown-number" class="countdown">3</div>
+        </section>
+
+        <!-- Pause -->
+        <section id="screen-pause" class="overlay" hidden>
+          <div class="card">
+            <h2>Paus</h2>
+            <button id="btn-resume" class="btn btn-primary btn-lg" type="button" data-autofocus>Fortsätt</button>
+            <button id="btn-pause-menu" class="btn" type="button">Huvudmeny</button>
+          </div>
+        </section>
+
+        <!-- Game over -->
+        <section id="screen-gameover" class="overlay" hidden>
+          <div class="card">
+            <h2>Game over</h2>
+            <p id="go-cause" class="muted"></p>
+            <div class="big-score"><span id="go-score">0</span><small>poäng</small></div>
+            <dl class="stats">
+              <div><dt>Äpplen</dt><dd id="go-apples">0</dd></div>
+              <div><dt>Spöken undvikna</dt><dd id="go-ghosts">0</dd></div>
+              <div><dt>Längd</dt><dd id="go-length">0</dd></div>
+              <div><dt>Nivå</dt><dd id="go-level">–</dd></div>
+            </dl>
+            <form id="go-form" class="name-form" hidden>
+              <label for="go-name">Ny placering på topplistan! Ditt namn:</label>
+              <div class="row">
+                <input id="go-name" maxlength="16" autocomplete="nickname" placeholder="Namn" />
+                <button class="btn btn-primary" type="submit">Spara</button>
+              </div>
+            </form>
+            <p id="go-result" class="result"></p>
+            <div class="row">
+              <button id="btn-again" class="btn btn-primary" type="button">Spela igen</button>
+              <button id="btn-go-menu" class="btn" type="button">Huvudmeny</button>
+            </div>
+          </div>
+        </section>
+      </div>
+    </main>
+
+    <footer class="footer">Piltangenter/WASD för att styra · P för paus</footer>
+  </div>
+
+  <script type="module" src="js/main.js"></script>
+</body>
+</html>
