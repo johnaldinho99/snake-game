@@ -68,3 +68,16 @@ tests/              Enhetstester
 
 Vill du justera balansen (hastighet, poäng, hur ofta spöken kommer) – ändra i
 `js/config.js`.
+
+## Hur det byggdes
+
+Byggt med Claude Code i VS Code som ett första test av verktyget (17 nov 2026).
+
+| | |
+|---|---|
+| Tid | Cirka 25–30 minuter från svar på kontrollfrågorna till pushad kod (uppskattat från filstämplar och commit-tider) |
+| Tokens / kostnad | Ej uppmätt – Claude Pro visar ingen token- eller kostnadsrapport |
+| Quota (Claude Pro) | Båda projekten (Snake + SCB-dashboard) tillsammans med planeringen: ca **22 %** av 5-timmarsgränsen och ca **3 %** av veckogränsen |
+
+Quota-siffrorna är kontots totala förbrukning vid avläsningen (`/usage`, ungefärlig och
+gäller sessioner på den här datorn), så de är en övre gräns för vad bygget kostade.
